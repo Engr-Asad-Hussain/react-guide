@@ -2,7 +2,8 @@
 This project will instruct the proformance optimization of react application when dealing with useContext...
 
 ## Guide
-I have followed this guide to understand the performance difference of react application using ContextAPI
+React version: 18.2.0
+- I have followed this guide to understand the performance difference of react application using ContextAPI
 https://www.telerik.com/blogs/how-to-use-context-api-with-hooks-efficiently-while-avoiding-performance-bottlenecks
 
 ## Observation
@@ -56,3 +57,7 @@ const GlobalSpinnerContextProvider = (props) => {
 export default GlobalSpinnerContextProvider
 ```
 
+## Remarks
+- We have witnessed in previous project that useState is much better than useReducer in terms of re-rendering.
+- Now shall we use ContextAPI with useState? Yes
+- We need to find what is the best way we can implement the same logic of useReducer in useState.
