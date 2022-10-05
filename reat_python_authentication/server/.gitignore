@@ -1,0 +1,12 @@
+# Folders
+**/__pycache__/
+/profiler
+/volume
+
+# Files
+.vscode
+*.pyc
+
+# Environments
+.env
+/venv
