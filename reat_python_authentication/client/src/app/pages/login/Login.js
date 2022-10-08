@@ -66,7 +66,7 @@ export function Login() {
                         required
                         id="email"
                         name="username"
-                        type="email"
+                        // type="email"
                         margin="normal"
                         placeholder="Email address"
                         onFocus={delError}

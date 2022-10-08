@@ -3,18 +3,26 @@
         {
             "userId": 2,
             "name": "Asad Hussain",
-            "username": "asad.h1999@yahoo.com",
-            "password": "$2b$12$f5CgmEW1ojrXSZW7dNhEoOtHVi57dJBah8jb.3.mR4zBiLIJGe1Oq",
-            "role": 2001,
-            "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjIsImlhdCI6MTY2NTEyNTc3MiwibmJmIjoxNjY1MTI1NzcyLCJleHAiOjE2NjUxMjYwNzIsImlzcyI6IkFzYWQgSHVzc2FpbiJ9.ivAm1yonM8ecOR-xGqOPI5Tm222zvEDcNHPFmh2tUig"
+            "username": "organization",
+            "password": "$2b$12$/TZ0KeCkIj0vlon1TK8FK.6TrntRFjRKnonS1iNZsBF2dQ5ULv2xS",
+            "role": 1993,
+            "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjIsImlhdCI6MTY2NTIwNzc2NywibmJmIjoxNjY1MjA3NzY3LCJleHAiOjE2NjUyMDgwNjcsImlzcyI6IkFzYWQgSHVzc2FpbiJ9.c6bbh6PBexlGzcA2RMqu5qZnm92xbt09_YTNsSsyFBc"
+        },
+        {
+            "userId": 3,
+            "name": "Asad Hussain",
+            "username": "reader",
+            "password": "$2b$12$4X2wP/qkxMou6OaVIbaKzephoAaBGADLsn4Qnt0zeGaC/jLRGbDni",
+            "role": 1834,
+            "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjMsImlhdCI6MTY2NTIwNzc4MSwibmJmIjoxNjY1MjA3NzgxLCJleHAiOjE2NjUyMDgwODEsImlzcyI6IkFzYWQgSHVzc2FpbiJ9.ezfjv6fYDSSYW0K44rPKeW2j5HkBBIQKNfQCn8KR6jU"
         },
         {
             "userId": 1,
             "name": "Asad Hussain",
-            "username": "asad.h1998@yahoo.com",
-            "password": "$2b$12$dAy4x9.DnzRRqSsietuoAODX4hkiQ9XYpNuOkkQ/z8fR4Bh7znubm",
-            "role": 1993,
-            "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjEsImlhdCI6MTY2NTEyNTgwMSwibmJmIjoxNjY1MTI1ODAxLCJleHAiOjE2NjUxMjYxMDEsImlzcyI6IkFzYWQgSHVzc2FpbiJ9.S33OnY3GXRr7S4vohIbZR_U6r2AOm2V_d-21fCyzB6Y"
+            "username": "admin",
+            "password": "$2b$12$5gID0d3dFgoBoQYeDs0NT.hIg9oVn198PG3AcG1GD8QUFoRnm7Cbu",
+            "role": 2001,
+            "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjEsImlhdCI6MTY2NTIxMDQ4NSwibmJmIjoxNjY1MjEwNDg1LCJleHAiOjE2NjUyMTA3ODUsImlzcyI6IkFzYWQgSHVzc2FpbiJ9.7hTlR0v8TMoteMTuVUm-KXygSpDCKa9p_GJ9JsJEdiE"
         }
     ],
     "revokes": [

@@ -19,7 +19,7 @@ export const userLogin = async (
 			}
 		)
 		.then((data) => {
-			const { accessToken, role } = data;
+			const { accessToken, role } = data.data;
 			authDispatch({ username, password, accessToken, role });
 			/**
 			 * Observation:

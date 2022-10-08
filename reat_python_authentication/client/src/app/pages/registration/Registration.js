@@ -45,7 +45,6 @@ export function Registration() {
 			name,
 			username,
 			pwd,
-			'FREE',
 			setIsLoading,
 			setError,
 		);

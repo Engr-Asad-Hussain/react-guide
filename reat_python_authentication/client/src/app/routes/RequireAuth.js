@@ -6,9 +6,8 @@ export function RequireAuth({ allowedRoles }) {
     const authState = useAuthState();
     const location = useLocation();
 
-    // console.log('RequireAuth', authState, location);
     return (
-        authState?.roles?.find(role => allowedRoles?.includes(role))
+        authState?.role?.find(role => allowedRoles?.includes(role))
             ? (<Outlet />)
             : authState?.username
                 ? (<Navigate to='/unauthorized' state={{ from: location }} replace />)

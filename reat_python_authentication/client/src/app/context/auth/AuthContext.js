@@ -5,6 +5,11 @@ const AuthContextDispatch = createContext();
 
 const AuthProvider = ({ children }) => {
     const [auth, setAuth] = useState(false);
+
+    /**
+     * auth   , useAuthState   , authState
+     * setAuth, useAuthDispatch, authDispatch
+     */
     return (
         <AuthContextDispatch.Provider value={setAuth}>
             <AuthContextState.Provider value={auth}>

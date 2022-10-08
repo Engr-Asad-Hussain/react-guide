@@ -4,26 +4,25 @@ export const userSignUp = async (
 	name,
 	username,
 	password,
-	license,
 	setIsLoading,
 	setError
 ) => {
 	setIsLoading(true);
 	await axios
-		.post(`${process.env.REACT_APP_USER_SERVICE}/user/signup`, {
-			name: name,
-			username: username,
-			password: password,
-			license: license,
-		})
+		.post(`${process.env.REACT_APP_USER_SERVICE}/user/signup`,
+			JSON.stringify({ name, username, password }),
+			{
+				headers: { 'Content-Type': 'application/json' }
+			}
+		)
 		.then((data) => {
-			alert(data.message);
+			alert(data.data.message);
 		})
 		.catch((error) => {
-			if (error !== undefined) {
+			if (!error?.response) {
 				setError({
 					status: true,
-					details: error.message
+					details: error.response.message,
 				});
 			} else {
 				setError({
