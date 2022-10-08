@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useAuthState } from 'app/hooks';
-import { employees } from 'app/callbacks';
-import axios from 'app/callbacks/axios';
-import { useRefreshToken } from 'app/hooks';
+import { useAxiosPrivate } from 'app/hooks';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export function Teams() {
     console.log('Page: Teams: ', window.location.pathname)
-    const authState = useAuthState();
-    const refresh = useRefreshToken();
+    const axiosPrivate = useAxiosPrivate();
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const [users, setUsers] = useState();
 
@@ -17,13 +16,19 @@ export function Teams() {
 
         const getUsers = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/users', {
-                    signal: controller.signal
+                const response = await axiosPrivate.get('http://localhost:5000/users', {
+                    signal: controller.signal,
+
                 });
                 console.log('response', response.data)
-                isMounted && setUsers(response.data)
+                isMounted && setUsers(response.data.users)
             } catch (error) {
                 console.error(error)
+                if (error?.response?.status == 400) {
+                    // Refresh token expires, Refresh token missing, Refresh token tempered
+                    alert('Cookie is missing ...')
+                    navigate('/login', { state: { from: location }, replace: true })
+                }
             }
         }
         getUsers()
@@ -35,15 +40,30 @@ export function Teams() {
             controller.abort()
         }
     }, [])
+
     return (
         <section>
-            <button onClick={() => refresh() }>Button</button>
             {users?.length ? (
-                <ul>
+                <table style={{ border: '1px solid black', width: '500px' }}>
+                    <thead>
+                        <tr>
+                            <th style={{ border: '1px solid black', textAlign: 'left' }}>User Id</th>
+                            <th style={{ border: '1px solid black', textAlign: 'left' }}>Email Address</th>
+                            <th style={{ border: '1px solid black', textAlign: 'left' }}>Roles</th>
+                        </tr>
+                    </thead>
                     {users.map((user, index) => {
-                        <li key={index}>{user?.username}</li>
+                        return (
+                            <tbody key={index}>
+                                <tr>
+                                    <td style={{ border: '1px solid black' }}>{user.userId}</td>
+                                    <td style={{ border: '1px solid black' }}>{user.username}</td>
+                                    <td style={{ border: '1px solid black' }}>{user.role}</td>
+                                </tr>
+                            </tbody>
+                        );
                     })}
-                </ul>
+                </table>
             ) : (
                 <p>No users to display</p>
             )}

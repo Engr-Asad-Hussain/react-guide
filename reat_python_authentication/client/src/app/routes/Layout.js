@@ -1,11 +1,12 @@
 import { ThemeProvider, theme } from 'app/theme';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useOutlet } from 'react-router-dom';
 import { Header, Sidebar } from 'app/components';
 import { Toolbar, Box, CssBaseline } from '@mui/material';
 
 
 export function Layout() {
     console.log('Layout: ', window.location.pathname);
+    console.log(useOutlet())
     return (
         <Box component="main" sx={{ display: 'flex' }}>
             <ThemeProvider theme={theme}>

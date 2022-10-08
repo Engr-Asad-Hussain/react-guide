@@ -19,8 +19,8 @@ export const userLogin = async (
 			}
 		)
 		.then((data) => {
-			const { accessToken, role } = data.data;
-			authDispatch({ username, password, accessToken, role });
+			const { accessToken } = data.data;
+			authDispatch( prev => ({ ...prev, username, accessToken }));
 			/**
 			 * Observation:
 			 * If we direct go to dashboard, it redirects to login because of RequireAuth (Dashboard is protected)
@@ -36,12 +36,12 @@ export const userLogin = async (
 			if (!error?.response) {
 				setError({
 					status: true,
-					details: error.response.message,
+					details: 'This service is not avaialble at the moment. Please try again later.'
 				});
 			} else {
 				setError({
 					status: true,
-					details: 'This service is not avaialble at the moment. Please try again later.'
+					details: error.response.data.message,
 				});
 			}
 			setIsLoading(false);

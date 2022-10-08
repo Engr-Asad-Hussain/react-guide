@@ -1,18 +1,20 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ButtonLoading } from 'app/custom';
 import { userLogin } from 'app/callbacks';
-import { useAuthDispatch, useAuthState } from 'app/hooks';
+import { useAuthDispatch } from 'app/hooks';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, Grid, FormControlLabel, Typography, TextField, Fade, Checkbox } from '@mui/material';
 
 
 export function Login() {
-    console.log('Page: Login: ', window.location.pathname);
+    console.log('Page: Login: ');
     const navigate = useNavigate();
     const location = useLocation();
 
     const authDispatch = useAuthDispatch();
     const [isLoading, setIsLoading] = useState(false);
+    const [persist, setPersist] = useState(false);
+
     const [error, setError] = useState({
         status: false,
         details: "",
@@ -22,7 +24,7 @@ export function Login() {
         const data = new FormData(event.target);
         const username = data.get("username");
         const password = data.get("password");
-        console.log(document.getElementById("password"))
+       
         if (!username || !password) {
             setError({
                 status: true,
@@ -46,6 +48,15 @@ export function Login() {
             details: "",
         });
     };
+
+    const handlePersist = () => {
+        authDispatch( prev => ({ ...prev, persist: !persist }))
+        setPersist(prev => !prev)
+    };
+
+    useEffect(() => {
+        window.localStorage.setItem('persist', JSON.stringify(persist))
+    }, [persist]);
 
     return (
             <Box maxWidth={400} marginInline='auto'>
@@ -101,9 +112,8 @@ export function Login() {
                         <FormControlLabel
                             control={
                                 <Checkbox
-                                    disabled
-                                    checked={false}
-                                    // onChange={}
+                                    checked={persist}
+                                    onChange={handlePersist}
                                     color="primary"
                                 />
                             }

@@ -2,6 +2,8 @@ import { useAuthDispatch } from 'app/hooks';
 import axios from 'app/callbacks/axios';
 
 const useRefreshToken = () => {
+    console.log('useRefreshToken');
+    
     const authDispatch = useAuthDispatch();
 
     const refresh = async () => {
@@ -9,9 +11,13 @@ const useRefreshToken = () => {
             { withCredentials: true }, // withCredentials=True allow us to send cookies with our request
         );
         authDispatch(prev => {
-            return { ...prev, accessToken: response.data.accessToken }
+            return { 
+                ...prev, 
+                role: response.data.role, 
+                accessToken: response.data.accessToken 
+            }
         })
-
+        
         // We have to return the accessToken so that we can use it with our request.
         // Because we will call this function when our initial request fails when our accessToken is expired
         // Then it will refresh, get a new token and we can re-call the request

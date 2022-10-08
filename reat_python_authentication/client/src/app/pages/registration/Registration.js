@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ButtonLoading, HelperText } from 'app/custom';
 import { userSignUp } from 'app/callbacks';
+import { useLocalStorage } from 'app/hooks'
 import { Typography, Button, Grid, TextField, Fade, Box } from '@mui/material';
 import ErrorIcon from '@mui/icons-material/Error';
 
@@ -9,9 +10,9 @@ const PWD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}
 
 
 export function Registration() {
-	console.log('Page: Registration: ', window.location.pathname)
-	const [name, setName] = useState('');
-	const [username, setUsername] = useState('');
+	console.log('Page: Registration: ', useLocalStorage('username', ''))
+	const [name, setName] = useLocalStorage('name', '');
+	const [username, setUsername] = useLocalStorage('username', '');
 
 	const [pwd, setPwd] = useState('');
 	const [validPwd, setValidPwd] = useState(false);
@@ -69,6 +70,7 @@ export function Registration() {
 						margin="dense"
 						placeholder="Full name"
 						onChange={(e) => setName(e.target.value)}
+						value={name}
 						autoFocus
 						required
 						fullWidth
@@ -80,6 +82,7 @@ export function Registration() {
 						margin="dense"
 						placeholder="Email address"
 						onChange={(e) => setUsername(e.target.value)}
+						value={username}
 						required
 						fullWidth
 					/>

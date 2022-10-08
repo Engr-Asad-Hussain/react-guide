@@ -4,7 +4,7 @@ const AuthContextState = createContext();
 const AuthContextDispatch = createContext();
 
 const AuthProvider = ({ children }) => {
-    const [auth, setAuth] = useState(false);
+    const [auth, setAuth] = useState({});
 
     /**
      * auth   , useAuthState   , authState

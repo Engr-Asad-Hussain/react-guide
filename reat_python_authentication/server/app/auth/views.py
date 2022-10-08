@@ -59,7 +59,7 @@ def register_user():
         'name': payload['name'],
         'username': payload['username'],
         'password': payload['password'],
-        'role': roles['GlobalAdmin']
+        'role': [roles['GlobalAdmin']]
     })
 
     # Write database file
@@ -83,7 +83,7 @@ def user_login():
     with open(database_path) as file:
         database = json.load(file)
 
-    # Verify username duplicates
+    # Verify username found in database?
     found_user = list(filter(lambda x: x['username'] ==
                 payload['username'], database['users']))
     if not len(found_user):
@@ -102,6 +102,7 @@ def user_login():
         exp = iat + timedelta(seconds=1*60) # 1 minutes
         jwt_data = {
             "userid": found_user[0]['userId'],
+            "roles": found_user[0]['role'],
             "iat": int(iat.timestamp()),
             "nbf": int(iat.timestamp()),
             "exp": int(exp.timestamp()),
@@ -115,6 +116,7 @@ def user_login():
         exp = iat + timedelta(seconds=5*60) # 5 minutes
         jwt_data = {
             "userid": found_user[0]['userId'],
+            "roles": found_user[0]['role'],
             "iat": int(iat.timestamp()),
             "nbf": int(iat.timestamp()),
             "exp": int(exp.timestamp()),
@@ -141,7 +143,7 @@ def user_login():
         json.dump(database, file, indent=4)
 
     # Set cookie and status code in response
-    response = make_response(jsonify({ 'accessToken': access_token, 'role': [found_user[0]['role']] }))
+    response = make_response(jsonify({ 'accessToken': access_token }))
     response.status_code = 200
     # response.allow = ['POST']
     response.autocorrect_location_header = True
@@ -161,10 +163,14 @@ def user_login():
 @bp.route('/user/logout', methods=['GET'])
 def user_logout():
     # Bearer token from header
+    # This is for same token cannot be used after logout
+    # If there is no access token in the authorization header that's ok 
+    # Because if the refresh token is expired then there wouldn't be any access token
+    # In this case access token and refresh token both gets expired than there is nothing to worry about
     try:
-        access_token = request.headers['authorization'].split(maxsplit=1)[1]
+        access_token = request.headers['Authorization'].split(maxsplit=1)[1]
     except:
-        return make_response(jsonify({'error': 'Authorization token is missing'}), 400)
+        print({'error': 'Authorization token is missing'})
 
     # What if we do validate token here?
     # What if, the user access token is expired, 
@@ -182,7 +188,50 @@ def user_logout():
     database['revokes'].append({
         'jwt': access_token
     })
+
+    # Write database file
+    with open(database_path, 'w') as file:
+        json.dump(database, file, indent=4)
     
+
+    ###########################################
+    # Remove refresh token
+    # Refresh token is inside cookie
+    # Frontend is requested to pass cookie from browser in logout request
+    cookie = request.cookies.get('refresh_token')
+
+    # Checks cookie is present in the request
+    if cookie is None:
+        # It means cookie is absent so don't need to clear it
+        # And it doesn't matter to remove it from database because it is already expired
+        return make_response(jsonify({ 'message': 'User logged out successfully'}), 200)
+
+    # Validate the refresh token
+    try:
+        decoded = jwt.decode(
+            jwt=cookie, key=app.config['REFRESH_TOKEN_SECRET'], issuer='Asad Hussain', algorithms=['HS256']
+        )
+    except jwt.exceptions.ExpiredSignatureError as e:
+        print(e)
+        return make_response(jsonify({'message': 'Refresh token has expired'}), 401)
+    except:
+        raise
+
+    # Removes refresh token in database
+    found_user = list(filter(lambda x: x['userId'] == decoded['userid'], database['users']))
+    if not len(found_user):
+        # This cannot be possible because refresh token is verified above
+        # 
+        return make_response(jsonify({'message': 'Server error'}), 500)
+
+    # Add refresh token in database as empty string
+    # Other users
+    other_users = list(filter(lambda x: x['userId'] != decoded['userid'], database['users']))
+
+    # Append refresh token with user
+    found_user[0]['refreshToken'] = ''
+    database['users'] = other_users + found_user
+
     # Write database file
     with open(database_path, 'w') as file:
         json.dump(database, file, indent=4)
@@ -269,6 +318,7 @@ def refresh_token():
         exp = iat + timedelta(seconds=1*60) # 1 minutes
         jwt_data = {
             "userid": decoded['userid'],
+            "roles": decoded['roles'],
             "iat": int(iat.timestamp()),
             "nbf": int(iat.timestamp()),
             "exp": int(exp.timestamp()),
@@ -276,12 +326,11 @@ def refresh_token():
         }
         access_token = jwt.encode(
             payload=jwt_data, key=app.config['ACCESS_TOKEN_SECRET'], algorithm='HS256')
-
     except:
         return make_response(jsonify({'message': 'Service not available'}), 500)
 
     # Return successfull response
-    return make_response(jsonify({'accessToken': access_token}), 200)
+    return make_response(jsonify({'accessToken': access_token }), 200)
 
 
 
@@ -341,7 +390,6 @@ def token_validator(token):
 
     # Check jwt present in the revoke list
     for item in database['revokes']:
-        print(item)
         if item['jwt'] == token:
             raise jwt.exceptions.InvalidTokenError
     
