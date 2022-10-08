@@ -11,28 +11,32 @@ export const userLogin = async (
 ) => {
 	setIsLoading(true);
 	await axios
-		.post(`${process.env.REACT_APP_USER_SERVICE}/user/login`, {
-			username: username,
-			password: password,
-		})
+		.post(`${process.env.REACT_APP_USER_SERVICE}/user/auth`,
+			JSON.stringify({ username, password }),
+			{
+				headers: { 'Content-Type': 'application/json' },
+				withCredentials: true
+			}
+		)
 		.then((data) => {
-			const jwt = data.data.jwt;
-			authDispatch({ username, password, jwt, roles: [1984] });
+			const { accessToken, role } = data;
+			authDispatch({ username, password, accessToken, role });
 			/**
 			 * Observation:
 			 * If we direct go to dashboard, it redirects to login because of RequireAuth (Dashboard is protected)
 			 * If login ok, it checks from which location you are coming (location?.state?.from?.pathname). If you are coming from /profile it redirects to /profile
 			 * 
 			 */
+			console.log(location)
 			const from = location?.state?.from?.pathname || '/dashboard'
-			console.log('from: ', from);
 			navigate(from, { replace: true })
 		})
 		.catch((error) => {
-			if (error !== undefined) {
+			console.log('error', error?.response)
+			if (!error?.response) {
 				setError({
 					status: true,
-					details: error.message,
+					details: error.response.message,
 				});
 			} else {
 				setError({

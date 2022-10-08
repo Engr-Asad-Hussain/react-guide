@@ -9,7 +9,7 @@ const PWD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}
 
 
 export function Registration() {
-	console.log('Registration: ', window.location.pathname)
+	console.log('Page: Registration: ', window.location.pathname)
 	const [name, setName] = useState('');
 	const [username, setUsername] = useState('');
 

@@ -7,11 +7,9 @@ import { Box, Grid, FormControlLabel, Typography, TextField, Fade, Checkbox } fr
 
 
 export function Login() {
-    // console.log(useAuthState());
-    console.log('Login: ', window.location);
+    console.log('Page: Login: ', window.location.pathname);
     const navigate = useNavigate();
     const location = useLocation();
-    console.log(navigate, location);
 
     const authDispatch = useAuthDispatch();
     const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +22,7 @@ export function Login() {
         const data = new FormData(event.target);
         const username = data.get("username");
         const password = data.get("password");
+        console.log(document.getElementById("password"))
         if (!username || !password) {
             setError({
                 status: true,

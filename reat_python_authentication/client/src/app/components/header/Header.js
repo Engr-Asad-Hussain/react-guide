@@ -2,6 +2,7 @@ import { AppBar, Toolbar, Typography, Button } from '@mui/material';
 
 
 function Header() {
+    console.log('Component: Headers')
     return (
         <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
             <Toolbar>

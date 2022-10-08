@@ -1,4 +1,3 @@
-from array import array
 from flask import request, make_response, jsonify, current_app as app
 from pprint import pprint
 from app.auth import bp
@@ -13,6 +12,11 @@ import os
 # secrets.token_urlsafe(128)
 
 database_path = os.path.dirname(os.path.realpath(__file__)) + '\database.json'
+roles = {
+    'GlobalAdmin': 2001,
+    'OrganizationAdmin': 1993,
+    'Reader': 1834,
+}
 
 
 @bp.route('/health_check', methods=['GET'])
@@ -27,13 +31,13 @@ def register_user():
 
     # Validate name, username, password
     if not ('name' in payload and 'username' in payload and 'password' in payload):
-        return make_response(jsonify({'message': 'Invalid payload'}), 406)
+        return make_response(jsonify({'message': 'Invalid payload'}), 400)
 
     # Open database file
     with open(database_path) as file:
         database = json.load(file)
 
-    # Verify username
+    # Verify username duplicates
     for user in database['users']:
         if user['username'] == payload['username']:
             return make_response(jsonify({'message': 'User already exists'}), 409)
@@ -42,12 +46,20 @@ def register_user():
     byte_pwd = payload['password'].encode('utf-8')
     payload['password'] = bcrypt.hashpw(byte_pwd, bcrypt.gensalt()).decode()
 
+    # Check if database is empty
+    users = database.get('users')
+    if len(users):
+        user_id = max(database['users'], key=lambda x:x['userId'])['userId'] + 1
+    else:
+        user_id = 1
+
     # Append username
     database['users'].append({
-        'userId': max(database['users'], key=lambda x:x['userId'])['userId'] + 1,
+        'userId': user_id,
         'name': payload['name'],
         'username': payload['username'],
-        'password': payload['password']
+        'password': payload['password'],
+        'role': roles['GlobalAdmin']
     })
 
     # Write database file
@@ -65,7 +77,7 @@ def user_login():
 
     # Validate name, username, password
     if not ('username' in payload and 'password' in payload):
-        return make_response(jsonify({'message': 'Invalid payload'}), 406)
+        return make_response(jsonify({'message': 'Invalid payload'}), 400)
 
     # Open database file
     with open(database_path) as file:
@@ -75,13 +87,13 @@ def user_login():
     found_user = list(filter(lambda x: x['username'] ==
                 payload['username'], database['users']))
     if not len(found_user):
-        return make_response(jsonify({'message': 'User does not exists'}), 409)
+        return make_response(jsonify({'message': 'User does not exists'}), 400)
 
     # Validate password
     pwd_bytes = payload['password'].encode('utf-8')
     hash_bytes = found_user[0]['password'].encode('utf-8')
     if not bcrypt.checkpw(pwd_bytes, hash_bytes):
-        return make_response(jsonify({'message': 'Incorrect password'}), 404)
+        return make_response(jsonify({'message': 'Incorrect password'}), 400)
 
     # Generate jwt
     try:
@@ -112,7 +124,7 @@ def user_login():
             payload=jwt_data, key=app.config['REFRESH_TOKEN_SECRET'], algorithm='HS256')
 
     except:
-        return make_response(jsonify({'message': 'Service not available'}), 502)
+        return make_response(jsonify({'message': 'Service not available'}), 500)
 
 
     # Add refresh token in database
@@ -129,10 +141,19 @@ def user_login():
         json.dump(database, file, indent=4)
 
     # Set cookie and status code in response
-    response = make_response(jsonify({ 'accessToken': access_token }))
+    response = make_response(jsonify({ 'accessToken': access_token, 'role': [found_user[0]['role']] }))
     response.status_code = 200
-    response.set_cookie(key='refresh_token', value=refresh_token, httponly=True, max_age=5*60)  # 5 minutes
-
+    # response.allow = ['POST']
+    response.autocorrect_location_header = True
+    response.set_cookie(
+        key='refresh_token', 
+        value=refresh_token, 
+        httponly=True, 
+        max_age=5*60, 
+        samesite=None, 
+        secure=True
+    )  # 5 minutes
+    
     # Return successfull response
     return response
 
@@ -143,7 +164,15 @@ def user_logout():
     try:
         access_token = request.headers['authorization'].split(maxsplit=1)[1]
     except:
-        return make_response(jsonify({'error': 'Authorization token is missing'}), 200)
+        return make_response(jsonify({'error': 'Authorization token is missing'}), 400)
+
+    # What if we do validate token here?
+    # What if, the user access token is expired, 
+    # He send a request to refresh token
+    # And refresh token is also expired
+    # In that case Validate Token Algorithm fails for infinite time
+
+    # For extra security we need to remove the refresh token from database for this user only
 
     # Open database file
     with open(database_path) as file:
@@ -153,13 +182,18 @@ def user_logout():
     database['revokes'].append({
         'jwt': access_token
     })
-
+    
     # Write database file
     with open(database_path, 'w') as file:
         json.dump(database, file, indent=4)
 
+    # Set cookie and status code in response
+    response = make_response(jsonify({ 'message': 'User logged out successfully'}))
+    response.status_code = 200
+    response.delete_cookie(key='refresh_token', httponly=True, samesite=None, secure=True)
+
     # Return successfull response
-    return make_response(jsonify({'message': 'User logged out successfully'}), 200)
+    return response
 
 
 @bp.route('/token/validate', methods=['POST'])
@@ -169,15 +203,22 @@ def validate_token():
 
     # Validate jwt
     if not ('token' in payload):
-        return make_response(jsonify({'message': 'Invalid payload'}), 406)
+        return make_response(jsonify({'message': 'Invalid payload'}), 400)
 
     # Validate token
     try:
         token_validator(payload['token'])
+    except jwt.exceptions.ExpiredSignatureError as e:
+        return make_response(jsonify({'message': str(e)}), 401)
+
     except jwt.exceptions.InvalidSignatureError as e:
-        return make_response(jsonify({'message': str(e)}), 406)
+        return make_response(jsonify({'message': str(e)}), 401)
+
+    except jwt.exceptions.InvalidTokenError: 
+        return make_response(jsonify({'message': 'Token is not valid. You have been logout'}), 401)
+    
     except Exception as e:
-        return make_response(jsonify({'message': str(e)}), 406)
+        return make_response(jsonify({'message': str(e)}), 500)
 
     # Return successfull response
     return make_response(jsonify({'message': 'Token is valid', 'data': True}), 200)
@@ -188,18 +229,16 @@ def refresh_token():
     # Get the cookie from the request
     # Refresh token is inside cookie
     cookie = request.cookies.get('refresh_token')
-    print('cookie', cookie)
 
     # Checks cookie is present in the request
     if cookie is None:
-        return make_response(jsonify({'error': 'Cookie is missing'}), 401)
+        return make_response(jsonify({'error': 'Cookie is missing'}), 400)
 
     # Validate the refresh token
     try:
         decoded = jwt.decode(
             jwt=cookie, key=app.config['REFRESH_TOKEN_SECRET'], issuer='Asad Hussain', algorithms=['HS256']
         )
-        pprint(decoded)
     except jwt.exceptions.ExpiredSignatureError as e:
         print(e)
         return make_response(jsonify({'message': 'Refresh token has expired'}), 401)
@@ -213,16 +252,14 @@ def refresh_token():
 
     # Filter refresh token relative to userid
     found_user = list(filter(lambda x: x['userId'] == decoded['userid'], database['users']))
-    print('found_user')
-    pprint(found_user)
     
     # Refresh token userId not matches database userId
     if not len(found_user):
-        return make_response(jsonify({'message': 'Token is not valid'}), 403)
+        return make_response(jsonify({'message': 'Token is not valid'}), 401)
 
     # Checks found user's refresh token matches with refresh token of cookie
     if found_user[0].get('refreshToken') != cookie:
-        return make_response(jsonify({'message': 'Refresh token is invalid'}), 406)
+        return make_response(jsonify({'message': 'Refresh token is invalid'}), 401)
 
     # Now refresh token is 99% valid and not expired
     # Generate new access token for this user
@@ -241,13 +278,10 @@ def refresh_token():
             payload=jwt_data, key=app.config['ACCESS_TOKEN_SECRET'], algorithm='HS256')
 
     except:
-        return make_response(jsonify({'message': 'Service not available'}), 502)
+        return make_response(jsonify({'message': 'Service not available'}), 500)
 
-
+    # Return successfull response
     return make_response(jsonify({'accessToken': access_token}), 200)
-
-
-    
 
 
 
@@ -257,15 +291,22 @@ def get_users():
     try:
         access_token = request.headers['authorization'].split(maxsplit=1)[1]
     except:
-        return make_response(jsonify({'error': 'Authorization token is missing'}), 406)
+        return make_response(jsonify({'error': 'Authorization token is missing'}), 400)
 
     # Validate token
     try:
         token_validator(access_token)
+    except jwt.exceptions.ExpiredSignatureError as e:
+        return make_response(jsonify({'message': str(e)}), 401)
+
     except jwt.exceptions.InvalidSignatureError as e:
-        return make_response(jsonify({'message': str(e)}), 406)
+        return make_response(jsonify({'message': str(e)}), 401)
+
+    except jwt.exceptions.InvalidTokenError: 
+        return make_response(jsonify({'message': 'Token is not valid. You have been logout'}), 401)
+    
     except Exception as e:
-        return make_response(jsonify({'message': str(e)}), 406)
+        return make_response(jsonify({'message': str(e)}), 500)
 
     # Open database file
     with open(database_path) as file:
@@ -276,7 +317,8 @@ def get_users():
         users.append({
             "userId": user['userId'],
             "name": user['name'],
-            "username": user['username']
+            "username": user['username'],
+            "role": user['role']
         })
 
     # Return successfull response
@@ -287,17 +329,21 @@ def token_validator(token):
     # Open database file
     with open(database_path) as file:
         database = json.load(file)
-
+    
     # Decode and validate jwt
     try:
-        jwt.decode(
+        decoded = jwt.decode(
             jwt=token, key=app.config['ACCESS_TOKEN_SECRET'], issuer='Asad Hussain', algorithms=['HS256']
         )
-    except:
+    except Exception as e:
+        print(e, type(e).__module__)
         raise
 
     # Check jwt present in the revoke list
     for item in database['revokes']:
+        print(item)
         if item['jwt'] == token:
-            raise Exception(json.dumps(
-                {'message': 'Token is not valid', 'code': 406}))
+            raise jwt.exceptions.InvalidTokenError
+    
+    # Return decoded value
+    return decoded

@@ -1,6 +1,6 @@
 
 export function Error() {
-    console.log('Error: ', window.location.pathname)
+    console.log('Page: Error: ', window.location.pathname)
     return (
         <section>
             Page not found

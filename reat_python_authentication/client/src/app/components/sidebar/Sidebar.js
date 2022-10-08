@@ -7,6 +7,7 @@ import MailIcon from '@mui/icons-material/Mail';
 const drawerWidth = 240;
 
 function Sidebar() {
+    console.log('Component: Sidebar')
     return (
         <Drawer
             variant="permanent"
@@ -20,7 +21,7 @@ function Sidebar() {
             <Box sx={{ overflow: 'auto' }}>
                 <List>
                     {['Admin', 'Dashboard', 'Profile', 'Teams'].map((text, index) => (
-                        <Link to={`${text.toLowerCase()}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                        <Link to={`${text.toLowerCase()}`} style={{ color: 'inherit', textDecoration: 'none' }} key={index}>
                             <ListItem key={text} disablePadding>
                                 <ListItemButton>
                                     <ListItemIcon>

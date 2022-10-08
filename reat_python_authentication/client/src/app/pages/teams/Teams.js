@@ -1,6 +1,6 @@
 
 export function Teams() {
-    console.log('Teams: ', window.location.pathname)
+    console.log('Page: Teams: ', window.location.pathname)
     return (
         <section>
             Welcome to Teams

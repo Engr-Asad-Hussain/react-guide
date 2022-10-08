@@ -9,7 +9,6 @@ const ROLES = {
 }
 export function AppRoutes() {
     console.log('AppRoutes: ', window.location.pathname);
-    console.log(useLocation())
     return (
         <Routes>
             <Route path='/' element={<Layout />}>

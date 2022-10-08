@@ -1,6 +1,6 @@
 
 export function AdminPortal() {
-    console.log('AdminPortal: ', window.location.pathname)
+    console.log('Page: AdminPortal: ', window.location.pathname)
     return (
         <section>
             Welcome to AdminPortal

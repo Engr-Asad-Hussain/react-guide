@@ -2,11 +2,11 @@ import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuthState } from 'app/hooks';
 
 export function RequireAuth({ allowedRoles }) {
-    console.log('RequireAuth: ', window.location.pathname)
+    console.log('Page: RequireAuth: ', window.location.pathname)
     const authState = useAuthState();
     const location = useLocation();
 
-    console.log('RequireAuth', authState, location);
+    // console.log('RequireAuth', authState, location);
     return (
         authState?.roles?.find(role => allowedRoles?.includes(role))
             ? (<Outlet />)
