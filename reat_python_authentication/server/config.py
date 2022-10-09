@@ -14,5 +14,7 @@ class Config:
     REFRESH_TOKEN_SECRET = os.getenv('REFRESH_TOKEN_SECRET')
 
     # Application Properties
-    JWT_EXT = 1
+    # Expiry time in minutes
+    ACCESS_TOKEN_EXPIRY = 2
+    REFRESH_TOKEN_EXPIRY = 5
     JSONIFY_PRETTYPRINT_REGULAR = True
