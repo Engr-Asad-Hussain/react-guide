@@ -1,0 +1,20 @@
+User -> Register : create account
+Register -> User : successfully created account
+User -> Login : request: { username, password }
+Login -> User : response: { accessToken }
+Login -> User : response: httpOnly cookie (refreshToken)
+User -> Application: redirects to the application
+User -> Timestamp 15m : accessToken in Authorization headers
+Timestamp 15m -> User : response as requested resource
+User ->Timestamp 30m : accessToken in Authorization headers
+Timestamp 30m -> User : response { accessToken has expired }
+User -> Refresh Token : send cookie to the refreshToken endpoint
+Refresh Token -> Validate : Validate refreshToken and cross-reference from database
+Validate -> Refresh Token : refreshToken is valid and not tempered
+Refresh Token -> User : response { accessToken }
+User -> Timestamp 30m : accessToken in Authorization headers
+Timestamp 30m -> User : response as requested resource
+User -> Logout : request { accessToken } + send cookie
+Logout -> Database : added accessToken in revoke + remove refreshToken
+
+Logout -> User : response as remove cookie from browser + successfully user logout
