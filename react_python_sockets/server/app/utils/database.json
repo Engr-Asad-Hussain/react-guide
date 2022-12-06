@@ -1,0 +1,53 @@
+{
+    "users": [
+        {
+            "userId": 1,
+            "username": "Admin"
+        },
+        {
+            "userId": 2,
+            "username": "Editor"
+        },
+        {
+            "userId": 3,
+            "username": "Dispatcher"
+        }
+    ],
+    "notf_storage": [
+        {
+            "notfId": 1,
+            "userId": 1,
+            "notfDescription": "User has been removed from the organization"
+        },
+        {
+            "notfId": 2,
+            "userId": 1,
+            "notfDescription": "User has been created"
+        },
+        {
+            "notfId": 3,
+            "userId": 1,
+            "notfDescription": "User has been promoted"
+        },
+        {
+            "notfId": 4,
+            "userId": 1,
+            "notfDescription": "User has been deactivated"
+        },
+        {
+            "notfId": 5,
+            "userId": 1,
+            "notfDescription": "User has been deleted"
+        },
+        {
+            "userId": 1,
+            "notfId": 6,
+            "notfDescription": "User has been added"
+        },
+        {
+            "userId": 1,
+            "notfId": 7,
+            "notfDescription": "User has been added"
+        }
+    ]
+}
